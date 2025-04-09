@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kofi’s Animal Healing Journal</title>
+  <title>Kofi's Animal Healing Journal</title>
   <style>
     * {
       margin: 0;
@@ -99,6 +99,9 @@
       margin-bottom: 2rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       transition: all 0.3s ease;
+      animation: slideIn 0.5s ease-out forwards;
+      opacity: 0;
+      position: relative;
     }
 
     .animal-entry:hover {
@@ -112,10 +115,17 @@
 
     .animal-entry img {
       width: 100%;
-      max-height: 200px;
+      height: 300px;
       object-fit: cover;
       border-radius: 10px;
       margin-bottom: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .animal-entry img:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
 
     .animal-entry h2 {
@@ -191,6 +201,7 @@
 
     .details.show {
       display: block;
+      animation: fadeInUp 0.5s ease-out forwards;
     }
 
     footer {
@@ -202,13 +213,37 @@
       border-top: 1px solid #e2e8f0;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .fade-in {
-      animation: fadeIn 0.5s ease-in;
+    .animal-entry {
+      animation: slideIn 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    .animal-entry:nth-child(odd) {
+      animation-delay: 0.1s;
+    }
+
+    .animal-entry:nth-child(even) {
+      animation-delay: 0.2s;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .search-bar button:hover {
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 600px) {
@@ -216,28 +251,512 @@
       header p { font-size: 1rem; }
       .animal-entry h2 { font-size: 1.6rem; }
       .animal-entry p, .animal-entry li { font-size: 1rem; }
-      .animal-entry img { max-height: 150px; }
+      .animal-entry img { height: 200px; }
       .search-bar input { width: 200px; }
       .search-bar { flex-direction: column; align-items: center; }
       .search-bar button { width: 200px; }
+    }
+
+    /* Add these new styles */
+    :root {
+      --bg-color: #f5f7fa;
+      --text-color: #2d3748;
+      --header-bg: #2f855a;
+      --card-bg: #fff;
+      --border-color: #e2e8f0;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a202c;
+      --text-color: #000000; /* Black text color for better visibility */
+      --header-bg: #276749;
+      --card-bg: #2d3748;
+      --border-color: #4a5568;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    header {
+      background: var(--header-bg);
+    }
+
+    .animal-entry {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--header-bg);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 25px;
+      cursor: pointer;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--header-bg);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      background: var(--card-bg);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn.active {
+      background: var(--header-bg);
+      color: white;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--border-color);
+      border-radius: 50%;
+      border-top-color: var(--header-bg);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      display: none;
+      color: var(--text-color);
+    }
+
+    /* Add these new styles */
+    .feature-buttons {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .feature-btn {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 25px;
+      background: var(--header-bg);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .feature-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .comparison-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .comparison-content {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 15px;
+      max-width: 800px;
+      margin: 2rem auto;
+      position: relative;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .comparison-grid select {
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+      width: 100%;
+    }
+
+    .comparison-grid button {
+      grid-column: 1 / -1;
+      padding: 0.8rem 1.5rem;
+      background: var(--header-bg);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .comparison-grid button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .comparison-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .animal1-details, .animal2-details {
+      background: var(--bg-color);
+      padding: 1.5rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--header-bg);
+    }
+
+    .animal1-details h4, .animal2-details h4 {
+      color: var(--header-bg);
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-color);
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .close-modal:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .share-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-color);
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .share-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      transform: scale(1.1);
+    }
+
+    .quiz-container {
+      display: none;
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 15px;
+      margin: 2rem 0;
+      position: relative;
+    }
+
+    .quiz-question {
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      margin-bottom: 2rem;
+    }
+
+    .quiz-option {
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .quiz-option:hover {
+      background: var(--header-bg);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .quiz-option.correct {
+      background: #48bb78;
+      color: white;
+      border-color: #48bb78;
+    }
+
+    .quiz-option.incorrect {
+      background: #e53e3e;
+      color: white;
+      border-color: #e53e3e;
+    }
+
+    .quiz-navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      gap: 1rem;
+    }
+
+    .quiz-button {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .next-btn {
+      background: var(--header-bg);
+      color: white;
+    }
+
+    .skip-btn {
+      background: #e2e8f0;
+      color: var(--text-color);
+    }
+
+    .close-btn {
+      background: #e53e3e;
+      color: white;
+    }
+
+    .quiz-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .quiz-progress {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-color);
+    }
+
+    .quiz-result {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    .quiz-score {
+      font-size: 2rem;
+      color: var(--header-bg);
+      margin: 1rem 0;
+    }
+
+    @media print {
+      .feature-buttons,
+      .search-bar,
+      .filters,
+      .theme-toggle,
+      .back-to-top,
+      .favorite-btn,
+      .share-btn {
+        display: none;
+      }
+
+      .animal-entry {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .details {
+        display: block !important;
+      }
+    }
+
+    .random-fact-container {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .random-fact-container h2 {
+      color: var(--header-bg);
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+    }
+
+    .random-fact-container blockquote {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      padding: 1.5rem;
+      background: var(--bg-color);
+      border-radius: 10px;
+      border-left: 4px solid var(--header-bg);
+      margin: 1.5rem 0;
+    }
+
+    .random-fact-container .close-btn {
+      display: block;
+      margin: 1rem auto 0;
+      padding: 0.8rem 2rem;
+      background: var(--header-bg);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .random-fact-container .close-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -60%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    /* Ensure text for data is black in night mode */
+    [data-theme="dark"] .animal-entry p, [data-theme="dark"] .animal-entry li {
+      color: #000000; /* Black text color for better visibility */
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+  <button class="back-to-top" onclick="scrollToTop()">↑</button>
+  
   <header>
-    <h1>Kofi’s Animal Healing Journal</h1>
-    <p>Exploring the Natural Wisdom of Earth’s Creatures</p>
+    <h1>Kofi's Animal Healing Journal</h1>
+    <p>Exploring the Natural Wisdom of Earth's Creatures</p>
   </header>
 
   <div class="container">
+    <div class="feature-buttons">
+      <button class="feature-btn" onclick="showRandomFact()">💡 Random Fact</button>
+      <button class="feature-btn" onclick="startQuiz()">📝 Take Quiz</button>
+    </div>
+
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Search for an animal..." />
       <button onclick="searchAnimals()">Explore</button>
     </div>
 
+    <div class="filters">
+      <button class="filter-btn" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="parasites">Parasites</button>
+      <button class="filter-btn" data-filter="bacterial">Bacterial</button>
+      <button class="filter-btn" data-filter="inflammation">Inflammation</button>
+      <button class="filter-btn" data-filter="stress">Stress</button>
+    </div>
+
+    <div class="quiz-container" id="quiz">
+      <h2>Animal Healing Knowledge Quiz</h2>
+      <div class="quiz-progress" id="quizProgress"></div>
+      <div class="quiz-question" id="quizQuestion"></div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-navigation">
+        <button class="quiz-button skip-btn" onclick="skipQuestion()">Skip</button>
+        <button class="quiz-button next-btn" onclick="nextQuestion()" style="display: none;">Next Question</button>
+        <button class="quiz-button close-btn" onclick="closeQuiz()">Close</button>
+      </div>
+      <div class="quiz-result" id="quizResult"></div>
+    </div>
+
+    <div class="loading"></div>
+    <div class="no-results">No animals found matching your search.</div>
+
     <!-- 1. Elephants -->
     <div class="animal-entry" data-animal="elephants">
+      <button class="share-btn" onclick="shareAnimal('elephants')">📤</button>
       <img src="IMG_5278.jpeg" alt="Elephant">
       <h2>1. Elephants</h2>
       <p><span class="label">Description:</span> Majestic giants of Africa and Asia, revered for their intelligence, memory, and intricate social structures.</p>
@@ -254,12 +773,14 @@
       </ul>
       <button class="collapse-button" onclick="toggleDetails(this)">Reveal Insights</button>
       <div class="details" id="elephantDetails">
-        <p>Elephants traverse continents, their trunks unearthing botanical pharmacies beneath the savanna’s canopy.</p>
+        <p>Elephants traverse continents, their trunks unearthing botanical pharmacies beneath the savanna's canopy.</p>
       </div>
     </div>
 
     <!-- 2. Rhinoceroses -->
     <div class="animal-entry" data-animal="rhinoceroses">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('rhinoceroses')">📤</button>
       <img src="IMG_5279.jpeg" alt="Rhinoceros">
       <h2>2. Rhinoceroses</h2>
       <p><span class="label">Description:</span> Armored titans of Africa and Asia, wielding horns as symbols of resilience.</p>
@@ -276,12 +797,14 @@
       </ul>
       <button class="collapse-button" onclick="toggleDetails(this)">Reveal Insights</button>
       <div class="details" id="rhinoDetails">
-        <p>Rhinos forge paths through thorns, their diets a fortress against nature’s assaults.</p>
+        <p>Rhinos forge paths through thorns, their diets a fortress against nature's assaults.</p>
       </div>
     </div>
 
     <!-- 3. Bison -->
     <div class="animal-entry" data-animal="bison">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('bison')">📤</button>
       <img src="IMG_5280.jpeg" alt="Bison">
       <h2>3. Bison</h2>
       <p><span class="label">Description:</span> Rugged monarchs of North American plains, embodying raw endurance.</p>
@@ -304,6 +827,8 @@
 
     <!-- 4. Hippopotamuses -->
     <div class="animal-entry" data-animal="hippopotamuses">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('hippopotamuses')">📤</button>
       <img src="IMG_5281.jpeg" alt="Hippopotamus">
       <h2>4. Hippopotamuses</h2>
       <p><span class="label">Description:</span> Semi-aquatic behemoths of Africa, masters of rivers and lakes.</p>
@@ -326,6 +851,8 @@
 
     <!-- 5. Gorillas -->
     <div class="animal-entry" data-animal="gorillas">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('gorillas')">📤</button>
       <img src="IMG_5282.jpeg" alt="Gorilla">
       <h2>5. Gorillas</h2>
       <p><span class="label">Description:</span> Forest-dwelling primates of Africa, bound by deep social ties.</p>
@@ -348,6 +875,8 @@
 
     <!-- 6. Zebras -->
     <div class="animal-entry" data-animal="zebras">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('zebras')">📤</button>
       <img src="IMG_5285.jpeg" alt="Zebra">
       <h2>6. Zebras</h2>
       <p><span class="label">Description:</span> Striped wanderers of African savannas, thriving in migratory herds.</p>
@@ -370,6 +899,8 @@
 
     <!-- 7. Giraffes -->
     <div class="animal-entry" data-animal="giraffes">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('giraffes')">📤</button>
       <img src="IMG_5284.jpeg" alt="Giraffe">
       <h2>7. Giraffes</h2>
       <p><span class="label">Description:</span> Towering sentinels of African savannas, browsing treetops with elegance.</p>
@@ -392,6 +923,8 @@
 
     <!-- 8. Camels -->
     <div class="animal-entry" data-animal="camels">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('camels')">📤</button>
       <img src="IMG_5286.jpeg" alt="Camel">
       <h2>8. Camels</h2>
       <p><span class="label">Description:</span> Desert nomads with humps of endurance, thriving in arid wastelands.</p>
@@ -414,6 +947,8 @@
 
     <!-- 9. Pandas -->
     <div class="animal-entry" data-animal="pandas">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('pandas')">📤</button>
       <img src="IMG_5287.jpeg" alt="Panda">
       <h2>9. Pandas</h2>
       <p><span class="label">Description:</span> Monochrome bears of Chinese highlands, bamboo connoisseurs.</p>
@@ -436,6 +971,8 @@
 
     <!-- 10. Sloths -->
     <div class="animal-entry" data-animal="sloths">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('sloths')">📤</button>
       <img src="IMG_5299.jpeg" alt="Sloth">
       <h2>10. Sloths</h2>
       <p><span class="label">Description:</span> Leisurely arboreal dwellers of Central and South American rainforests.</p>
@@ -458,6 +995,8 @@
 
     <!-- 11. Koalas -->
     <div class="animal-entry" data-animal="koalas">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('koalas')">📤</button>
       <img src="IMG_5288.jpeg" alt="Koala">
       <h2>11. Koalas</h2>
       <p><span class="label">Description:</span> Eucalyptus-bound marsupials of Australian woodlands.</p>
@@ -480,6 +1019,8 @@
 
     <!-- 12. Kangaroos -->
     <div class="animal-entry" data-animal="kangaroos">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('kangaroos')">📤</button>
       <img src="IMG_5289.jpeg" alt="Kangaroo">
       <h2>12. Kangaroos</h2>
       <p><span class="label">Description:</span> Bounding marsupials of Australian outback, pouch-bearing dynamos.</p>
@@ -502,6 +1043,8 @@
 
     <!-- 13. Tortoises -->
     <div class="animal-entry" data-animal="tortoises">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('tortoises')">📤</button>
       <img src="IMG_5300.jpeg" alt="Tortoise">
       <h2>13. Tortoises</h2>
       <p><span class="label">Description:</span> Shelled wanderers of warm terrains, ancient survivors.</p>
@@ -524,6 +1067,8 @@
 
     <!-- 14. Antelopes -->
     <div class="animal-entry" data-animal="antelopes">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('antelopes')">📤</button>
       <img src="IMG_5292.jpeg" alt="Antelope">
       <h2>14. Antelopes</h2>
       <p><span class="label">Description:</span> Swift grazers of African and Asian grasslands, agile and horned.</p>
@@ -546,6 +1091,8 @@
 
     <!-- 15. Moose -->
     <div class="animal-entry" data-animal="moose">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('moose')">📤</button>
       <img src="IMG_5301.jpeg" alt="Moose">
       <h2>15. Moose</h2>
       <p><span class="label">Description:</span> Towering deer of North American and Eurasian wetlands, antlered giants.</p>
@@ -568,6 +1115,8 @@
 
     <!-- 16. Okapi -->
     <div class="animal-entry" data-animal="okapi">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('okapi')">📤</button>
       <img src="IMG_5293.jpeg" alt="Okapi">
       <h2>16. Okapi</h2>
       <p><span class="label">Description:</span> Elusive, zebra-striped kin of giraffes, hidden in African rainforests.</p>
@@ -590,9 +1139,11 @@
 
     <!-- 17. Capybara -->
     <div class="animal-entry" data-animal="capybara">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('capybara')">📤</button>
       <img src="IMG_5294.jpeg" alt="Capybara">
       <h2>17. Capybara</h2>
-      <p><span class="label">Description:</span> Sociable giants of South American waterways, the world’s largest rodents.</p>
+      <p><span class="label">Description:</span> Sociable giants of South American waterways, the world's largest rodents.</p>
       <p><span class="label">Diet:</span> Paspalum notatum (Bahia grass) blades, Eichhornia crassipes (Water hyacinth) leaves, Cecropia pachystachya shoots, Hymenachne amplexicaulis tender stems.</p>
       <p><span class="label">Life Span:</span> 8–10 years in the wild.</p>
       <p><span class="label">Conditions:</span> Skin irritation, dysbiosis, bacterial infections, heat stress, parasites.</p>
@@ -612,6 +1163,8 @@
 
     <!-- 18. Deer -->
     <div class="animal-entry" data-animal="deer">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('deer')">📤</button>
       <img src="IMG_5276.jpeg" alt="Deer">
       <h2>18. Deer</h2>
       <p><span class="label">Description:</span> Graceful forest dwellers with antlers, roaming woodlands globally.</p>
@@ -634,6 +1187,8 @@
 
     <!-- 19. Wildebeest -->
     <div class="animal-entry" data-animal="wildebeest">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('wildebeest')">📤</button>
       <img src="IMG_5295.jpeg" alt="Wildebeest">
       <h2>19. Wildebeest</h2>
       <p><span class="label">Description:</span> Migratory antelopes of African savannas, thundering in vast herds.</p>
@@ -656,6 +1211,8 @@
 
     <!-- 20. Tapir -->
     <div class="animal-entry" data-animal="tapir">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('tapir')">📤</button>
       <img src="IMG_5296.jpeg" alt="Tapir">
       <h2>20. Tapir</h2>
       <p><span class="label">Description:</span> Trunked herbivores of Central and South American forests, nocturnal foragers.</p>
@@ -678,6 +1235,8 @@
 
     <!-- 21. Manatee -->
     <div class="animal-entry" data-animal="manatee">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('manatee')">📤</button>
       <img src="IMG_5297.jpeg" alt="Manatee">
       <h2>21. Manatee</h2>
       <p><span class="label">Description:</span> Gentle sea cows of warm coastal waters, grazing on aquatic bounty.</p>
@@ -700,6 +1259,8 @@
 
     <!-- 22. Iguana -->
     <div class="animal-entry" data-animal="iguana">
+      <button class="favorite-btn" onclick="toggleFavorite(this)">❤️</button>
+      <button class="share-btn" onclick="shareAnimal('iguana')">📤</button>
       <img src="IMG_5298.jpeg" alt="Iguana">
       <h2>22. Iguana</h2>
       <p><span class="label">Description:</span> Sun-basking lizards of tropical Americas, vibrant and herbivorous.</p>
@@ -726,32 +1287,513 @@
     <p>Curated by Kofi Fosu
   </footer>
 
+  <div class="random-fact-container" id="randomFact">
+    <h2>Random Animal Fact</h2>
+    <blockquote id="randomFactText"></blockquote>
+    <button class="close-btn" onclick="closeRandomFact()">Close</button>
+  </div>
+
   <script>
+    // Array of fresh insights for each animal
+    const animalInsights = {
+      elephants: [
+        "Elephants traverse continents, their trunks unearthing botanical pharmacies beneath the savanna's canopy.",
+        "In the golden light of dawn, elephants teach us the wisdom of nature's pharmacy.",
+        "Through generations, elephants have mastered the art of self-healing with nature's gifts.",
+        "Elephants communicate through vibrations, a testament to their deep connection with the earth.",
+        "The elephant's memory is legendary, a symbol of wisdom and experience."
+      ],
+      rhinoceroses: [
+        "Rhinos forge paths through thorns, their diets a fortress against nature's assaults.",
+        "With each step, rhinos demonstrate nature's perfect balance of strength and healing.",
+        "The rhino's horn may be its crown, but its true power lies in its knowledge of healing plants.",
+        "Rhinos have a symbiotic relationship with birds, who help keep them free of parasites.",
+        "The rhino's thick skin is a natural armor, protecting it from the harsh environment."
+      ],
+      bison: [
+        "Bison thunder across prairies, their herbal arsenal fortifying their shaggy might.",
+        "In the vast plains, bison show us how to harness nature's healing power.",
+        "The bison's strength comes not just from its size, but from its wisdom in choosing healing plants."
+      ],
+      hippopotamuses: [
+        "Hippos reign over waterways, their plant feasts a balm for their aquatic lives.",
+        "Beneath the water's surface, hippos discover nature's healing secrets.",
+        "The hippo's massive frame belies its delicate knowledge of medicinal plants."
+      ],
+      gorillas: [
+        "Gorillas weave through jungles, their diets a tapestry of healing and strength.",
+        "In the heart of the forest, gorillas teach us the art of natural medicine.",
+        "The gorilla's gentle nature is matched by its profound understanding of healing plants."
+      ],
+      giraffes: [
+        "Giraffes stretch toward the heavens, their leafy feasts a lifeline of resilience.",
+        "From the treetops, giraffes show us nature's healing bounty.",
+        "The giraffe's height gives it access to nature's most potent remedies."
+      ],
+      camels: [
+        "Camels conquer deserts, their plant diet a shield against relentless sands.",
+        "In the harshest conditions, camels find nature's healing gifts.",
+        "The camel's endurance is matched by its knowledge of desert medicine."
+      ],
+      pandas: [
+        "Pandas lounge in bamboo groves, their diet a gentle balm for their serene lives.",
+        "Among the bamboo, pandas discover nature's peaceful remedies.",
+        "The panda's calm demeanor reflects its deep connection to healing plants."
+      ],
+      sloths: [
+        "Sloths drift through canopies, their leafy diets a slow dance of healing.",
+        "In the treetops, sloths find nature's gentle remedies.",
+        "The sloth's slow pace allows it to carefully select the most beneficial plants."
+      ],
+      koalas: [
+        "Koalas cling to treetops, their eucalyptus diet a soothing elixir.",
+        "Among the eucalyptus, koalas find nature's perfect medicine.",
+        "The koala's peaceful nature is nurtured by its healing diet."
+      ],
+      kangaroos: [
+        "Kangaroos leap across plains, their plant diet fueling boundless energy.",
+        "Across the outback, kangaroos discover nature's energizing remedies.",
+        "The kangaroo's powerful legs are matched by its knowledge of healing plants."
+      ],
+      tortoises: [
+        "Tortoises plod through time, their plant diet an elixir of longevity.",
+        "Through the ages, tortoises have mastered nature's healing secrets.",
+        "The tortoise's long life is a testament to its wisdom in choosing healing plants."
+      ],
+      antelopes: [
+        "Antelopes sprint with grace, their plant diet a fountain of vigor.",
+        "Across the savanna, antelopes find nature's energizing remedies.",
+        "The antelope's speed is matched by its knowledge of healing plants."
+      ],
+      moose: [
+        "Moose wade through marshes, their plant diet a bulwark against the cold.",
+        "In northern waters, moose discover nature's warming remedies.",
+        "The moose's massive antlers are matched by its knowledge of healing plants."
+      ],
+      capybara: [
+        "Capybaras bask by rivers, their plant diet a serene shield of health.",
+        "Along the waterways, capybaras find nature's peaceful remedies.",
+        "The capybara's social nature is nurtured by its healing diet."
+      ],
+      deer: [
+        "Deer dance through forests, their plant diet a symphony of survival.",
+        "Through the woods, deer discover nature's gentle remedies.",
+        "The deer's graceful movements reflect its deep connection to healing plants."
+      ],
+      wildebeest: [
+        "Wildebeest surge across plains, their plant diet a pulse of endurance.",
+        "Across the savanna, wildebeest find nature's energizing remedies.",
+        "The wildebeest's migration is guided by its knowledge of healing plants."
+      ],
+      tapir: [
+        "Tapirs roam twilight forests, their plant diet a balm for their quiet lives.",
+        "In the forest shadows, tapirs discover nature's gentle remedies.",
+        "The tapir's peaceful nature is nurtured by its healing diet."
+      ],
+      manatee: [
+        "Manatees drift through seas, their plant diet a buoyant shield of peace.",
+        "Beneath the waves, manatees find nature's gentle remedies.",
+        "The manatee's gentle nature is matched by its knowledge of healing plants."
+      ],
+      iguana: [
+        "Iguanas bask in sunlight, their plant diet a vibrant cloak of health.",
+        "Among the trees, iguanas discover nature's energizing remedies.",
+        "The iguana's colorful scales reflect its deep connection to healing plants."
+      ]
+    };
+
+    // Function to get a random insight for an animal
+    function getRandomInsight(animal) {
+      const insights = animalInsights[animal];
+      return insights ? insights[Math.floor(Math.random() * insights.length)] : "No insights available.";
+    }
+
     function toggleDetails(button) {
       const details = button.nextElementSibling;
       const isVisible = details.classList.contains('show');
+      const animal = button.closest('.animal-entry').dataset.animal;
+      
+      if (!isVisible) {
+        // Update the insight text with a fresh one
+        details.querySelector('p').textContent = getRandomInsight(animal);
+      }
+      
       details.classList.toggle('show', !isVisible);
       details.classList.toggle('fade-in', !isVisible);
       button.textContent = isVisible ? 'Reveal Insights' : 'Hide Insights';
     }
 
+    // Initialize theme based on user preference
+    function initializeTheme() {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.body.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.addEventListener('scroll', () => {
+      const backToTop = document.querySelector('.back-to-top');
+      backToTop.classList.toggle('visible', window.scrollY > 300);
+    });
+
     function searchAnimals() {
       const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
       const entries = document.querySelectorAll('.animal-entry');
+      const loading = document.querySelector('.loading');
+      const noResults = document.querySelector('.no-results');
+      let found = false;
 
-      entries.forEach(entry => {
-        const animalName = entry.dataset.animal.toLowerCase();
-        const isMatch = animalName.includes(searchTerm);
-        entry.classList.toggle('hidden', !isMatch);
-        if (isMatch && searchTerm !== '') {
-          entry.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      loading.style.display = 'block';
+      noResults.style.display = 'none';
+
+      setTimeout(() => {
+        entries.forEach(entry => {
+          const animalName = entry.querySelector('h2').textContent.toLowerCase();
+          const description = entry.querySelector('p:has(.label:contains("Description:"))').textContent.toLowerCase();
+          const conditions = entry.querySelector('p:has(.label:contains("Conditions:"))').textContent.toLowerCase();
+          const isMatch = animalName.includes(searchTerm) || 
+                         description.includes(searchTerm) || 
+                         conditions.includes(searchTerm);
+          
+          entry.classList.toggle('hidden', !isMatch);
+          if (isMatch) {
+            found = true;
+            entry.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+
+        loading.style.display = 'none';
+        if (!found && searchTerm !== '') {
+          noResults.style.display = 'block';
         }
-      });
+      }, 500);
     }
 
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') searchAnimals();
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        const filter = button.dataset.filter;
+        const entries = document.querySelectorAll('.animal-entry');
+        
+        entries.forEach(entry => {
+          if (filter === 'all') {
+            entry.classList.remove('hidden');
+          } else {
+            const conditions = entry.querySelector('.label:contains("Conditions:")').nextSibling.textContent.toLowerCase();
+            entry.classList.toggle('hidden', !conditions.includes(filter));
+          }
+        });
+      });
     });
+
+    // Move facts array to global scope
+    const facts = [
+      "Elephants can recognize themselves in a mirror, demonstrating remarkable self-awareness.",
+      "Rhinos have thick skin that can be 1.5-5 cm thick, providing natural protection.",
+      "Bison are the largest land mammals in North America, weighing up to 2,000 pounds.",
+      "Giraffes have the same number of neck vertebrae as humans - just seven!",
+      "Koalas sleep up to 18 hours a day, conserving energy for their low-nutrient diet.",
+      "Manatees are the only marine mammals that are strictly herbivorous.",
+      "Capybaras are the world's largest rodents and are excellent swimmers.",
+      "Pandas spend 10-16 hours a day eating bamboo to meet their energy needs.",
+      "Sloths only defecate once a week, making it a risky and energy-consuming task.",
+      "Kangaroos can't walk backward, but they can hop at speeds up to 40 mph.",
+      "Tortoises can live over 100 years, making them one of the longest-living animals.",
+      "Antelopes can run at speeds up to 60 mph, making them one of the fastest land animals.",
+      "Moose are excellent swimmers and can dive up to 20 feet underwater.",
+      "Okapis are the only living relatives of giraffes, despite their zebra-like stripes.",
+      "Deer have a highly developed sense of smell, which helps them detect predators.",
+      "Wildebeest migrate in large herds, covering distances of up to 1,000 miles.",
+      "Tapirs have prehensile snouts, which they use to grab leaves and fruit.",
+      "Iguanas can detach their tails to escape predators, a process known as autotomy.",
+      "Manatees communicate using a variety of sounds, including chirps and whistles.",
+      "Gorillas share 98% of their DNA with humans, making them one of our closest relatives."
+    ];
+
+    let currentFactIndex = 0;
+
+    function updateFact() {
+      const randomFactText = document.getElementById('randomFactText');
+      randomFactText.textContent = facts[currentFactIndex];
+    }
+
+    function nextFact() {
+      currentFactIndex = (currentFactIndex + 1) % facts.length;
+      updateFact();
+    }
+
+    function showRandomFact() {
+      const randomFactContainer = document.getElementById('randomFact');
+      randomFactContainer.style.display = 'block';
+
+      // Clear existing content and set up auto-change
+      randomFactContainer.innerHTML = `
+        <h2>Random Animal Fact</h2>
+        <blockquote id="randomFactText">${facts[currentFactIndex]}</blockquote>
+        <button class="close-btn" onclick="closeRandomFact()">Close</button>
+      `;
+
+      // Update the fact initially
+      updateFact();
+
+      // Auto-change fact every 5 seconds
+      setInterval(nextFact, 5000);
+    }
+
+    function closeRandomFact() {
+      const randomFactContainer = document.getElementById('randomFact');
+      randomFactContainer.style.display = 'none';
+    }
+
+    function toggleFavorite(button) {
+      // Remove this function
+    }
+
+    function addToFavorites(animalName) {
+      // Remove this function
+    }
+
+    function removeFromFavorites(animalName) {
+      // Remove this function
+    }
+
+    function showFavorites() {
+      // Remove this function
+    }
+
+    function shareAnimal(animal) {
+      const url = `${window.location.origin}${window.location.pathname}?animal=${animal}`;
+      if (navigator.share) {
+        navigator.share({
+          title: `Learn about ${animal}`,
+          text: `Check out this amazing animal from Kofi's Animal Healing Journal!`,
+          url: url
+        }).catch(err => {
+          console.error('Error sharing:', err);
+          copyToClipboard(url);
+        });
+      } else {
+        copyToClipboard(url);
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => alert('Link copied to clipboard!'))
+        .catch(err => console.error('Error copying to clipboard:', err));
+    }
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeTheme();
+      
+      // Check for animal parameter in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const animalParam = urlParams.get('animal');
+      if (animalParam) {
+        const entry = document.querySelector(`[data-animal="${animalParam}"]`);
+        if (entry) {
+          entry.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+
+    function startComparison() {
+      const modal = document.getElementById('comparisonModal');
+      const content = document.getElementById('comparisonContent');
+      const entries = document.querySelectorAll('.animal-entry');
+      
+      content.innerHTML = `
+        <div class="comparison-grid">
+          <select id="animal1">
+            ${Array.from(entries).map(entry => 
+              `<option value="${entry.dataset.animal}">${entry.querySelector('h2').textContent}</option>`
+            ).join('')}
+          </select>
+          <select id="animal2">
+            ${Array.from(entries).map(entry => 
+              `<option value="${entry.dataset.animal}">${entry.querySelector('h2').textContent}</option>`
+            ).join('')}
+          </select>
+          <button onclick="compareAnimals()">Compare</button>
+        </div>
+      `;
+      
+      modal.style.display = 'block';
+    }
+
+    function closeComparison() {
+      document.getElementById('comparisonModal').style.display = 'none';
+    }
+
+    function compareAnimals() {
+      const animal1 = document.getElementById('animal1').value;
+      const animal2 = document.getElementById('animal2').value;
+      const entry1 = document.querySelector(`[data-animal="${animal1}"]`);
+      const entry2 = document.querySelector(`[data-animal="${animal2}"]`);
+      
+      if (!entry1 || !entry2) {
+        alert('Please select valid animals for comparison.');
+        return;
+      }
+
+      const content = document.getElementById('comparisonContent');
+      content.innerHTML = `
+        <h3>Comparison: ${entry1.querySelector('h2').textContent} vs ${entry2.querySelector('h2').textContent}</h3>
+        <div class="comparison-details">
+          <div class="animal1-details">
+            <h4>${entry1.querySelector('h2').textContent}</h4>
+            <p><strong>Conditions:</strong> ${entry1.querySelector('p:has(.label:contains("Conditions:"))').textContent.replace('Conditions:', '').trim()}</p>
+            <p><strong>Life Span:</strong> ${entry1.querySelector('p:has(.label:contains("Life Span:"))').textContent.replace('Life Span:', '').trim()}</p>
+            <p><strong>Insight:</strong> ${getRandomInsight(animal1)}</p>
+          </div>
+          <div class="animal2-details">
+            <h4>${entry2.querySelector('h2').textContent}</h4>
+            <p><strong>Conditions:</strong> ${entry2.querySelector('p:has(.label:contains("Conditions:"))').textContent.replace('Conditions:', '').trim()}</p>
+            <p><strong>Life Span:</strong> ${entry2.querySelector('p:has(.label:contains("Life Span:"))').textContent.replace('Life Span:', '').trim()}</p>
+            <p><strong>Insight:</strong> ${getRandomInsight(animal2)}</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('comparisonModal').style.display = 'block';
+    }
+
+    // Quiz functionality
+    const quizQuestions = [
+      {
+        question: "Which animal uses Acacia tortilis to combat parasites?",
+        options: ["Elephant", "Giraffe", "Zebra", "Lion"],
+        answer: "Elephant"
+      },
+      {
+        question: "What medicinal plant do rhinos use for wound healing?",
+        options: ["Commiphora africana", "Aloe vera", "Eucalyptus", "Bamboo"],
+        answer: "Commiphora africana"
+      },
+      {
+        question: "Which animal uses Eucalyptus leaves for respiratory health?",
+        options: ["Koala", "Kangaroo", "Panda", "Sloth"],
+        answer: "Koala"
+      },
+      {
+        question: "What condition do bison treat with Artemisia ludoviciana?",
+        options: ["Respiratory infections", "Joint pain", "Skin irritation", "Parasites"],
+        answer: "Respiratory infections"
+      },
+      {
+        question: "Which animal uses Vernonia amygdalina for joint inflammation?",
+        options: ["Gorilla", "Elephant", "Rhino", "Giraffe"],
+        answer: "Gorilla"
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    function startQuiz() {
+      document.getElementById('quiz').style.display = 'block';
+      currentQuestion = 0;
+      score = 0;
+      answered = false;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const question = quizQuestions[currentQuestion];
+      document.getElementById('quizQuestion').textContent = question.question;
+      document.getElementById('quizProgress').textContent = `Question ${currentQuestion + 1} of ${quizQuestions.length}`;
+      document.getElementById('quizResult').textContent = '';
+      document.querySelector('.next-btn').style.display = 'none';
+      answered = false;
+      
+      const optionsHtml = question.options.map(option => `
+        <div class="quiz-option" onclick="checkAnswer('${option}')">
+          ${option}
+        </div>
+      `).join('');
+      
+      document.getElementById('quizOptions').innerHTML = optionsHtml;
+    }
+
+    function checkAnswer(answer) {
+      if (answered) return;
+      answered = true;
+      
+      const question = quizQuestions[currentQuestion];
+      const options = document.querySelectorAll('.quiz-option');
+      
+      options.forEach(option => {
+        if (option.textContent.trim() === question.answer) {
+          option.classList.add('correct');
+        } else if (option.textContent.trim() === answer) {
+          option.classList.add('incorrect');
+        }
+      });
+
+      if (answer === question.answer) {
+        score++;
+      }
+
+      document.querySelector('.next-btn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < quizQuestions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function skipQuestion() {
+      currentQuestion++;
+      if (currentQuestion < quizQuestions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function closeQuiz() {
+      document.getElementById('quiz').style.display = 'none';
+    }
+
+    function showResult() {
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      document.getElementById('quizResult').innerHTML = `
+        <div class="quiz-score">${score}/${quizQuestions.length} (${percentage}%)</div>
+        <p>${getResultMessage(percentage)}</p>
+      `;
+      document.querySelector('.next-btn').style.display = 'none';
+    }
+
+    function getResultMessage(percentage) {
+      if (percentage >= 90) return "Excellent! You're a true animal healing expert!";
+      if (percentage >= 70) return "Great job! You have a good understanding of animal healing.";
+      if (percentage >= 50) return "Not bad! You know some basics about animal healing.";
+      return "Keep learning! There's more to discover about animal healing.";
+    }
+
+    // Load Google Maps
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
+    script.async = true;
+    document.head.appendChild(script);
   </script>
 </body>
 </html>
