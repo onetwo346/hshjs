@@ -49,47 +49,29 @@
       margin: auto;
     }
 
-    .search-bar {
-      margin: 2rem 0;
+    .feature-buttons {
       display: flex;
-      justify-content: center;
       gap: 1rem;
-      position: relative; /* Changed from sticky to relative */
-      z-index: 10;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    .search-bar input {
-      padding: 0.9rem 1.5rem;
-      font-size: 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 25px;
-      width: 300px;
-      background: #fff;
-      color: #2d3748;
-      transition: all 0.3s ease;
-    }
-
-    .search-bar input:focus {
-      outline: none;
-      border-color: #2f855a;
-      box-shadow: 0 0 8px rgba(47, 133, 90, 0.3);
-    }
-
-    .search-bar button {
-      background: #2f855a;
-      color: #fff;
-      padding: 0.9rem 1.8rem;
+    .feature-btn {
+      padding: 0.8rem 1.5rem;
       border: none;
       border-radius: 25px;
+      background: var(--header-bg);
+      color: white;
       cursor: pointer;
+      transition: all 0.3s ease;
       font-size: 1rem;
       font-weight: 600;
-      transition: all 0.3s ease;
     }
 
-    .search-bar button:hover {
-      background: #276749;
+    .feature-btn:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .animal-entry {
@@ -252,7 +234,6 @@
       .animal-entry h2 { font-size: 1.6rem; }
       .animal-entry p, .animal-entry li { font-size: 1rem; }
       .animal-entry img { height: 200px; }
-      .search-bar input { width: 200px; }
       .search-bar { flex-direction: column; align-items: center; }
       .search-bar button { width: 200px; }
     }
@@ -328,48 +309,10 @@
       opacity: 1;
     }
 
-    .filters {
-      display: flex;
-      gap: 1rem;
-      margin: 1rem 0;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .filter-btn {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      background: var(--card-bg);
-      color: var(--text-color);
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .filter-btn.active {
-      background: var(--header-bg);
-      color: white;
-    }
-
     .loading {
       display: none;
       text-align: center;
       margin: 2rem 0;
-    }
-
-    .loading::after {
-      content: '';
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid var(--border-color);
-      border-radius: 50%;
-      border-top-color: var(--header-bg);
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
     }
 
     .no-results {
@@ -707,6 +650,133 @@
     [data-theme="dark"] .animal-entry p, [data-theme="dark"] .animal-entry li {
       color: #000000; /* Black text color for better visibility */
     }
+
+    .search-bar {
+      position: relative;
+      margin: 2rem 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      border: 2px solid var(--border-color);
+      border-radius: 30px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: var(--card-bg);
+      color: var(--text-color);
+    }
+
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--header-bg);
+      box-shadow: 0 0 15px rgba(47, 133, 90, 0.2);
+    }
+
+    .search-bar button {
+      background: var(--header-bg);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .search-bar button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-bar .clear-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      cursor: pointer;
+      padding: 0.8rem;
+    }
+
+    .search-bar .clear-btn:hover {
+      color: var(--header-bg);
+    }
+
+    .search-bar input:not(:placeholder-shown) + .clear-btn {
+      display: block;
+    }
+
+    .search-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 0.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: none;
+    }
+
+    .search-suggestions.visible {
+      display: block;
+    }
+
+    .suggestion-item {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .suggestion-item:hover {
+      background: var(--header-bg);
+      color: white;
+    }
+
+    .loading-indicator {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--border-color);
+      border-radius: 50%;
+      border-top-color: var(--header-bg);
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    .search-bar input:focus + .loading-indicator {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .search-bar {
+        margin: 1rem;
+      }
+
+      .search-bar input {
+        padding: 0.8rem;
+      }
+
+      .search-bar button {
+        padding: 0.7rem 1.2rem;
+      }
+    }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -727,15 +797,9 @@
 
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Search for an animal..." />
-      <button onclick="searchAnimals()">Explore</button>
-    </div>
-
-    <div class="filters">
-      <button class="filter-btn" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="parasites">Parasites</button>
-      <button class="filter-btn" data-filter="bacterial">Bacterial</button>
-      <button class="filter-btn" data-filter="inflammation">Inflammation</button>
-      <button class="filter-btn" data-filter="stress">Stress</button>
+      <button class="clear-btn" onclick="clearSearch()">×</button>
+      <span class="loading-indicator"></span>
+      <div class="search-suggestions"></div>
     </div>
 
     <div class="quiz-container" id="quiz">
@@ -1297,7 +1361,7 @@
     // Array of fresh insights for each animal
     const animalInsights = {
       elephants: [
-        "Elephants traverse continents, their trunks unearthing botanical pharmacies beneath the savanna's canopy.",
+        "Elephants can recognize themselves in a mirror, demonstrating remarkable self-awareness.",
         "In the golden light of dawn, elephants teach us the wisdom of nature's pharmacy.",
         "Through generations, elephants have mastered the art of self-healing with nature's gifts.",
         "Elephants communicate through vibrations, a testament to their deep connection with the earth.",
@@ -1445,95 +1509,6 @@
       backToTop.classList.toggle('visible', window.scrollY > 300);
     });
 
-    function searchAnimals() {
-      const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-      const entries = document.querySelectorAll('.animal-entry');
-      const loading = document.querySelector('.loading');
-      const noResults = document.querySelector('.no-results');
-      let found = false;
-
-      loading.style.display = 'block';
-      noResults.style.display = 'none';
-
-      setTimeout(() => {
-        entries.forEach(entry => {
-          const animalName = entry.querySelector('h2').textContent.toLowerCase();
-          const description = entry.querySelector('p:has(.label:contains("Description:"))').textContent.toLowerCase();
-          const conditions = entry.querySelector('p:has(.label:contains("Conditions:"))').textContent.toLowerCase();
-          const isMatch = animalName.includes(searchTerm) || 
-                         description.includes(searchTerm) || 
-                         conditions.includes(searchTerm);
-          
-          entry.classList.toggle('hidden', !isMatch);
-          if (isMatch) {
-            found = true;
-            entry.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
-
-        loading.style.display = 'none';
-        if (!found && searchTerm !== '') {
-          noResults.style.display = 'block';
-        }
-      }, 500);
-    }
-
-    // Filter functionality
-    document.querySelectorAll('.filter-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        
-        const filter = button.dataset.filter;
-        const entries = document.querySelectorAll('.animal-entry');
-        
-        entries.forEach(entry => {
-          if (filter === 'all') {
-            entry.classList.remove('hidden');
-          } else {
-            const conditions = entry.querySelector('.label:contains("Conditions:")').nextSibling.textContent.toLowerCase();
-            entry.classList.toggle('hidden', !conditions.includes(filter));
-          }
-        });
-      });
-    });
-
-    // Move facts array to global scope
-    const facts = [
-      "Elephants can recognize themselves in a mirror, demonstrating remarkable self-awareness.",
-      "Rhinos have thick skin that can be 1.5-5 cm thick, providing natural protection.",
-      "Bison are the largest land mammals in North America, weighing up to 2,000 pounds.",
-      "Giraffes have the same number of neck vertebrae as humans - just seven!",
-      "Koalas sleep up to 18 hours a day, conserving energy for their low-nutrient diet.",
-      "Manatees are the only marine mammals that are strictly herbivorous.",
-      "Capybaras are the world's largest rodents and are excellent swimmers.",
-      "Pandas spend 10-16 hours a day eating bamboo to meet their energy needs.",
-      "Sloths only defecate once a week, making it a risky and energy-consuming task.",
-      "Kangaroos can't walk backward, but they can hop at speeds up to 40 mph.",
-      "Tortoises can live over 100 years, making them one of the longest-living animals.",
-      "Antelopes can run at speeds up to 60 mph, making them one of the fastest land animals.",
-      "Moose are excellent swimmers and can dive up to 20 feet underwater.",
-      "Okapis are the only living relatives of giraffes, despite their zebra-like stripes.",
-      "Deer have a highly developed sense of smell, which helps them detect predators.",
-      "Wildebeest migrate in large herds, covering distances of up to 1,000 miles.",
-      "Tapirs have prehensile snouts, which they use to grab leaves and fruit.",
-      "Iguanas can detach their tails to escape predators, a process known as autotomy.",
-      "Manatees communicate using a variety of sounds, including chirps and whistles.",
-      "Gorillas share 98% of their DNA with humans, making them one of our closest relatives."
-    ];
-
-    let currentFactIndex = 0;
-
-    function updateFact() {
-      const randomFactText = document.getElementById('randomFactText');
-      randomFactText.textContent = facts[currentFactIndex];
-    }
-
-    function nextFact() {
-      currentFactIndex = (currentFactIndex + 1) % facts.length;
-      updateFact();
-    }
-
     function showRandomFact() {
       const randomFactContainer = document.getElementById('randomFact');
       randomFactContainer.style.display = 'block';
@@ -1541,7 +1516,7 @@
       // Clear existing content and set up auto-change
       randomFactContainer.innerHTML = `
         <h2>Random Animal Fact</h2>
-        <blockquote id="randomFactText">${facts[currentFactIndex]}</blockquote>
+        <blockquote id="randomFactText">${getRandomInsight()}</blockquote>
         <button class="close-btn" onclick="closeRandomFact()">Close</button>
       `;
 
@@ -1794,6 +1769,81 @@
     script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
     script.async = true;
     document.head.appendChild(script);
+  </script>
+
+  <script>
+    function performSearch() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+      const entries = document.querySelectorAll('.animal-entry');
+      let found = false;
+
+      entries.forEach(entry => {
+        const animalName = entry.querySelector('h2').textContent.toLowerCase();
+        const isMatch = animalName.includes(searchTerm);
+
+        entry.style.display = isMatch ? 'block' : 'none';
+        if (isMatch) {
+          found = true;
+        }
+      });
+
+      if (!found && searchTerm !== '') {
+        alert('No animals found matching your search.');
+      }
+    }
+  </script>
+
+  <script>
+    function clearSearch() {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.value = '';
+      performSearch();
+      searchInput.focus();
+    }
+
+    function updateSuggestions() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const suggestions = document.querySelector('.search-suggestions');
+      suggestions.innerHTML = '';
+
+      if (searchTerm.length < 2) return;
+
+      const entries = document.querySelectorAll('.animal-entry');
+      const matches = Array.from(entries)
+        .map(entry => ({
+          name: entry.querySelector('h2').textContent,
+          similarity: entry.querySelector('h2').textContent.toLowerCase().includes(searchTerm) ? 1 : 0
+        }))
+        .filter(match => match.similarity > 0)
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 5); // Show top 5 suggestions
+
+      matches.forEach(match => {
+        const suggestion = document.createElement('div');
+        suggestion.className = 'suggestion-item';
+        suggestion.textContent = match.name;
+        suggestion.onclick = () => {
+          document.getElementById('searchInput').value = match.name;
+          performSearch();
+          suggestions.innerHTML = '';
+        };
+        suggestions.appendChild(suggestion);
+      });
+
+      suggestions.classList.toggle('visible', matches.length > 0);
+    }
+
+    document.getElementById('searchInput')
+      .addEventListener('input', (e) => {
+        performSearch();
+        updateSuggestions();
+      });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-bar')) {
+        document.querySelector('.search-suggestions').innerHTML = '';
+      }
+    });
   </script>
 </body>
 </html>
